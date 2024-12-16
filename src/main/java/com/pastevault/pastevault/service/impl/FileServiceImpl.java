@@ -7,6 +7,7 @@ import com.pastevault.pastevault.dto.request.fs.NewVaultFileNode;
 import com.pastevault.pastevault.dto.request.fs.UpdateVaultFileNode;
 import com.pastevault.pastevault.dto.response.VaultFileNodeDTO;
 import com.pastevault.pastevault.dto.response.VaultNodeDTO;
+import com.pastevault.pastevault.event.producer.NodeIndexingManager;
 import com.pastevault.pastevault.mapper.VaultNodeMapper;
 import com.pastevault.pastevault.model.NodeType;
 import com.pastevault.pastevault.model.StorageNode;
@@ -24,11 +25,14 @@ public class FileServiceImpl implements FileService {
 
     private final VaultNodeRepository vaultNodeRepository;
     private final CommonFileSystemService fileSystemService;
+    private final NodeIndexingManager nodeIndexingManager;
 
     public FileServiceImpl(VaultNodeRepository vaultNodeRepository,
-                           CommonFileSystemService fileSystemService) {
+                           CommonFileSystemService fileSystemService,
+                           NodeIndexingManager nodeIndexingManager) {
         this.vaultNodeRepository = vaultNodeRepository;
         this.fileSystemService = fileSystemService;
+        this.nodeIndexingManager = nodeIndexingManager;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class FileServiceImpl implements FileService {
         log.info("Creating a file from {}", newVaultFileNode);
 
         String parentPath = newVaultFileNode.parentPath();
-        fileSystemService.getParentDirNode(parentPath);
+//        fileSystemService.getParentDirNode(parentPath);
 
         VaultNode fileNode = VaultNode.builder()
                 .parentPath(parentPath + CommonFileSystemService.FS_SEPARATOR)
@@ -44,7 +48,8 @@ public class FileServiceImpl implements FileService {
                 .storageNode(createStorageNode(newVaultFileNode.storageNode()))
                 .creatorId(CommonFileSystemService.CREATOR_ID)
                 .build();
-
+        fileNode = vaultNodeRepository.save(fileNode);
+        nodeIndexingManager.index(fileNode);
         return VaultNodeMapper.mapToDTO(fileNode);
     }
 

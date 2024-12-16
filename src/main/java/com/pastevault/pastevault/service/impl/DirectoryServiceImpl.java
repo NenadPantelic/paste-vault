@@ -3,6 +3,7 @@ package com.pastevault.pastevault.service.impl;
 import com.pastevault.pastevault.dto.request.fs.ListDirectoryContentRequest;
 import com.pastevault.pastevault.dto.request.fs.NewVaultDirNode;
 import com.pastevault.pastevault.dto.response.VaultNodeDTO;
+import com.pastevault.pastevault.event.producer.NodeIndexingManager;
 import com.pastevault.pastevault.mapper.VaultNodeMapper;
 import com.pastevault.pastevault.model.VaultNode;
 import com.pastevault.pastevault.repository.VaultNodeRepository;
@@ -20,26 +21,31 @@ public class DirectoryServiceImpl implements DirectoryService {
 
     private final VaultNodeRepository vaultNodeRepository;
     private final CommonFileSystemService fileSystemService;
+    private final NodeIndexingManager nodeIndexingManager;
 
     public DirectoryServiceImpl(VaultNodeRepository vaultNodeRepository,
-                                CommonFileSystemService fileSystemService) {
+                                CommonFileSystemService fileSystemService,
+                                NodeIndexingManager nodeIndexingManager) {
         this.vaultNodeRepository = vaultNodeRepository;
         this.fileSystemService = fileSystemService;
+        this.nodeIndexingManager = nodeIndexingManager;
     }
 
     @Override
     public VaultNodeDTO createDirectory(NewVaultDirNode newVaultDirNode) {
         log.info("Creating a directory from {}", newVaultDirNode);
         String parentPath = newVaultDirNode.parentPath();
-        fileSystemService.getParentDirNode(parentPath);
+//        fileSystemService.getParentDirNode(parentPath);
 
-        VaultNode fileNode = VaultNode.builder()
+        VaultNode dirNode = VaultNode.builder()
                 .parentPath(parentPath + CommonFileSystemService.FS_SEPARATOR)
                 .name(newVaultDirNode.name())
                 .creatorId(CommonFileSystemService.CREATOR_ID)
                 .build();
+        vaultNodeRepository.save(dirNode);
 
-        return VaultNodeMapper.mapToDTO(fileNode);
+        nodeIndexingManager.index(dirNode);
+        return VaultNodeMapper.mapToDTO(dirNode);
     }
 
     @Override

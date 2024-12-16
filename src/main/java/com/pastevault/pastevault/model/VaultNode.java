@@ -20,7 +20,7 @@ import java.time.Instant;
 @Data
 @Document(collection = "nodes")
 @CompoundIndexes({
-        @CompoundIndex(name = "parentpath_name", def = "{'parentPath' : 1, 'name': 1}")
+        @CompoundIndex(name = "parent_path__name", def = "{'parentPath' : 1, 'name': 1}")
 })
 public class VaultNode {
 
@@ -31,6 +31,8 @@ public class VaultNode {
     private String name;
     private String creatorId;
     private StorageNode storageNode;
+    @Builder.Default
+    private NodeStatus nodeStatus = NodeStatus.IMPORTING;
     @CreatedDate
     private Instant createdAt;
     @LastModifiedDate

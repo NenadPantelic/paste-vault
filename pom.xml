@@ -31,12 +31,27 @@
         <!-- Dependency versions -->
         <dep.jakarta-validation.version>3.1.0</dep.jakarta-validation.version>
         <dep.hibernate-validator.version>8.0.1.Final</dep.hibernate-validator.version>
+<!--        <dep.kafka-avro-serializer.version>7.7.2</dep.kafka-avro-serializer.version>-->
+<!--        <dep.avro.version>1.10.0</dep.avro.version>-->
     </properties>
+
+    <repositories>
+        <repository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!--  Internal dependencies -->
         <dependency>
             <groupId>com.pastevault</groupId>
             <artifactId>api-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pastevault</groupId>
+            <artifactId>kafka-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- Spring dependencies -->
@@ -47,6 +62,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
         <!-- Misc dependencies -->
@@ -61,6 +86,24 @@
             <artifactId>hibernate-validator</artifactId>
             <version>${dep.hibernate-validator.version}</version>
         </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>io.confluent</groupId>-->
+<!--            <artifactId>kafka-avro-serializer</artifactId>-->
+<!--            <version>${dep.kafka-avro-serializer.version}</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>javax.ws.rs</groupId>-->
+<!--                    <artifactId>javax.ws.rs-api</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>org.apache.avro</groupId>-->
+<!--            <artifactId>avro</artifactId>-->
+<!--            <version>${dep.avro.version}</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

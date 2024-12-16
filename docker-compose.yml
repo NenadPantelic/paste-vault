@@ -1,0 +1,186 @@
+version: '3.7'
+services:
+  # distributed system cluster manager
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.0.4
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper:2888:3888
+    networks:
+      - app-kafka
+  schema-registry:
+    # registry of the cluster, results are cached
+    image: confluentinc/cp-schema-registry:5.0.4
+    hostname: schema-registry
+    depends_on:
+      - zookeeper
+      - kafka-broker-1
+      - kafka-broker-2
+      - kafka-broker-3
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
+      SCHEMA_REGISTRY_DEBUG: 'true'
+    networks:
+      - app-kafka
+  # three brokers in a cluster, quorum must be achieved (to prevent the network split)
+  kafka-broker-1:
+    image: confluentinc/cp-kafka:5.0.4
+    hostname: kafka-broker-1
+    ports:
+      - "19092:19092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092,LISTENER_LOCAL://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_COMPRESSION_TYPE: producer
+    networks:
+      - app-kafka
+  kafka-broker-2:
+    image: confluentinc/cp-kafka:5.0.4
+    hostname: kafka-broker-2
+    ports:
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # two listeners, one for internal communication, one for external
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-2:9092,LISTENER_LOCAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      # end-to-end compression
+      KAFKA_COMPRESSION_TYPE: producer
+    networks:
+      - app-kafka
+  kafka-broker-3:
+    image: confluentinc/cp-kafka:5.0.4
+    hostname: kafka-broker-3
+    ports:
+      - "39092:39092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-3:9092,LISTENER_LOCAL://localhost:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_COMPRESSION_TYPE: producer
+    networks:
+      - app-kafka
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - data:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=rootuser
+      - MONGO_INITDB_ROOT_PASSWORD=rootpass
+
+  elastic-1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    hostname: elastic-1
+    environment:
+      - node.name=elastic-1
+      - cluster.name=es-node-cluster
+      - discovery.seed_hosts=elastic-2,elastic-3
+      - cluster.initial_master_nodes=elastic-1,elastic-2,elastic-3
+      # to prevent swapping (most OS tries to use as much memory as possible for caching;
+      # this could result in JVM/heap pages being swapped to disk, which is very bad for performance, that's why we lock
+      # ES pages from being swapped
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    #    user: root
+    #    command: ["sh", "-c", "sysctl -w vm.max_map_count=262144"]
+    ulimits:
+      # allowing ES to lock the memory
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      # port of the whole cluster
+      - 9200:9200
+    networks:
+      - app-es
+  elastic-2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    environment:
+      - node.name=elastic-2
+      - cluster.name=es-node-cluster
+      - discovery.seed_hosts=elastic-1,elastic-3
+      - cluster.initial_master_nodes=elastic-1,elastic-2,elastic-3
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
+
+    #    user: root
+    #    command: [ "sh", "-c", "sysctl -w vm.max_map_count=262144" ]
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+    networks:
+      - app-es
+  elastic-3:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    environment:
+      - node.name=elastic-3
+      - cluster.name=es-node-cluster
+      - discovery.seed_hosts=elastic-1,elastic-2
+      - cluster.initial_master_nodes=elastic-1,elastic-2,elastic-3
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    #    user: root
+    #    command: [ "sh", "-c", "sysctl -w vm.max_map_count=262144" ]
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data03:/usr/share/elasticsearch/data
+    networks:
+      - app-es
+
+volumes:
+  data: { }
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+
+
+networks:
+  app-kafka:
+    driver: bridge
+  app-es:
+    driver: bridge
+
+
+# sysctl -w vm.max_map_count=262144
