@@ -2,6 +2,7 @@ package com.pastevault.pastevault.service.impl;
 
 import com.pastevault.apicommon.exception.ApiException;
 import com.pastevault.apicommon.exception.ErrorReport;
+import com.pastevault.pastevault.model.NodeStatus;
 import com.pastevault.pastevault.model.NodeType;
 import com.pastevault.pastevault.model.VaultNode;
 import com.pastevault.pastevault.repository.VaultNodeRepository;
@@ -17,7 +18,7 @@ public class CommonFileSystemService {
     public static final String FS_SEPARATOR = "/";
     public static final String CREATOR_ID = "<<CREATOR-ID>>";
 
-    private final VaultNodeRepository vaultNodeRepository;
+    protected final VaultNodeRepository vaultNodeRepository;
 
     public CommonFileSystemService(VaultNodeRepository vaultNodeRepository) {
         this.vaultNodeRepository = vaultNodeRepository;
@@ -40,6 +41,11 @@ public class CommonFileSystemService {
         VaultNode dirNode = getNodeByFullPath(path).orElseThrow(() -> new ApiException(ErrorReport.NOT_FOUND));
         if (dirNode.getType() != NodeType.DIR) {
             throw new ApiException(ErrorReport.BAD_REQUEST.withErrors("Expected a dir node, got file node"));
+        }
+
+        if (dirNode.getNodeStatus() != NodeStatus.READY) {
+            log.warn("Dir node {} is not ready for use", dirNode);
+            throw new ApiException(ErrorReport.NOT_FOUND);
         }
 
         return dirNode;
@@ -83,5 +89,12 @@ public class CommonFileSystemService {
         }
 
         return vaultNode;
+    }
+
+    // name must not contain `/`
+    protected void validateName(String name) {
+        if (name == null || name.isEmpty() || name.contains("/")) {
+            throw new IllegalArgumentException("Name is a required field that must not contain '\\'");
+        }
     }
 }

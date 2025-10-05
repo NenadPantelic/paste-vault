@@ -1,0 +1,63 @@
+### Create a folder
+
+POST http://localhost:8300/api/v1/dirs
+content-type: application/json
+
+{
+"parentPath": "/",
+"name": "to-read"
+}
+
+###
+
+### Create a folder - level 2
+
+POST http://localhost:8300/api/v1/dirs
+content-type: application/json
+
+{
+"parentPath": "/to-read",
+"name": "tech"
+}
+
+
+### Create a folder - level 3
+
+POST http://localhost:8300/api/v1/dirs
+content-type: application/json
+
+{
+"parentPath": "/to-read/tech",
+"name": "articles"
+}
+
+
+
+### Create a file - level 3 (url)
+
+POST http://localhost:8300/api/v1/files
+content-type: application/json
+
+{
+"parentPath": "/to-read/tech/articles",
+"name": "Zookeeper tutorial 22",
+"storage": {
+  "type": "link",
+  "url": "https://bikas-katwal.medium.com/zookeeper-introduction-designing-a-distributed-system-using-zookeeper-and-java-7f1b108e236e"
+  }
+}
+
+
+### Create a file - level 3 (text)
+
+POST http://localhost:8300/api/v1/files
+content-type: application/json
+
+{
+"parentPath": "/to-read/tech/articles",
+"name": "Books to read",
+"storage": {
+  "type": "link",
+  "text": "1. Pragmatic programmer..."
+  }
+}

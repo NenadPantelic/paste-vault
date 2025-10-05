@@ -20,7 +20,7 @@ import java.time.Instant;
 @Data
 @Document(collection = "nodes")
 @CompoundIndexes({
-        @CompoundIndex(name = "parent_path__name", def = "{'parentPath' : 1, 'name': 1}")
+        @CompoundIndex(name = "parent_path__name", def = "{'parentPath' : 1, 'name': 1}", unique = true)
 })
 public class VaultNode {
 
@@ -32,7 +32,7 @@ public class VaultNode {
     private String creatorId;
     private StorageNode storageNode;
     @Builder.Default
-    private NodeStatus nodeStatus = NodeStatus.IMPORTING;
+    private NodeStatus nodeStatus = NodeStatus.READY;
     @CreatedDate
     private Instant createdAt;
     @LastModifiedDate
@@ -41,5 +41,9 @@ public class VaultNode {
 
     public NodeType getType() {
         return storageNode != null ? NodeType.FILE : NodeType.DIR;
+    }
+
+    public String getFullPath() {
+        return String.format("%s/%s", parentPath, name);
     }
 }

@@ -1,7 +1,10 @@
 package com.pastevault.pastevault.controller;
 
+import com.pastevault.apicommon.exception.ApiException;
+import com.pastevault.apicommon.exception.ErrorReport;
 import com.pastevault.pastevault.dto.request.fs.ListDirectoryContentRequest;
 import com.pastevault.pastevault.dto.request.fs.NewVaultDirNode;
+import com.pastevault.pastevault.dto.request.fs.UpdateVaultDirNode;
 import com.pastevault.pastevault.dto.response.VaultNodeDTO;
 import com.pastevault.pastevault.service.DirectoryService;
 import jakarta.validation.Valid;
@@ -31,8 +34,14 @@ public class DirectoryController {
 
     @PostMapping(":list")
     public List<VaultNodeDTO> listDirectoryContent(@Valid @RequestBody ListDirectoryContentRequest listDirectoryContentRequest) {
-        log.info("Received a request to list the content of a directory a new directory.");
+        log.info("Received a request to list the content of a directory.");
         return directoryService.listDirectoryContent(listDirectoryContentRequest);
+    }
+
+    @PutMapping("/{nodeId}")
+    public VaultNodeDTO updateDirectory(@PathVariable("nodeId") String nodeId, @Valid @RequestBody UpdateVaultDirNode updateVaultDirNode) {
+        log.info("Received a request to update the directory");
+        throw new ApiException(ErrorReport.NOT_FOUND);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
