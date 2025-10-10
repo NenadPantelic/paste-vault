@@ -24,9 +24,19 @@ public class CommonFileSystemService {
         this.vaultNodeRepository = vaultNodeRepository;
     }
 
+    /**
+     * Deletes a node with the given id.
+     * If the node does not exist, it throws an exception.
+     *
+     * @param nodeId an id of the node that should be deleted
+     * @throws ApiException(ErrorReport.NOT_FOUND) if the node does not exist
+     */
     public void deleteNode(String nodeId) {
-        // TODO: check
-        vaultNodeRepository.deleteById(nodeId);
+        // deleteById from Spring Boot 3.x does not throw an EmptyResultDataAccessException
+        // exception
+        if (vaultNodeRepository.deleteNodeById(nodeId) == 0) {
+            throw new ApiException(ErrorReport.NOT_FOUND);
+        }
     }
 
     /**
@@ -96,5 +106,13 @@ public class CommonFileSystemService {
         if (name == null || name.isEmpty() || name.contains("/")) {
             throw new IllegalArgumentException("Name is a required field that must not contain '\\'");
         }
+    }
+
+    protected String denormalizePath(String path) {
+        if (FS_SEPARATOR.equals(path)) {
+            return path;
+        }
+
+        return path.endsWith(FS_SEPARATOR) ? path : path + FS_SEPARATOR;
     }
 }

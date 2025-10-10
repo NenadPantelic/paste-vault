@@ -57,7 +57,52 @@ content-type: application/json
 "parentPath": "/to-read/tech/articles",
 "name": "Books to read",
 "storage": {
-  "type": "link",
+  "type": "text",
   "text": "1. Pragmatic programmer..."
   }
+}
+
+
+####
+### List directory content
+
+POST http://localhost:8300/api/v1/dirs%3Alist
+content-type: application/json
+
+{
+"parentPath": "/to-read/tech/articles"
+}
+
+### Delete a file
+DELETE http://localhost:8300/api/v1/files/68e26fc361e6fe2fb8b7917e
+
+
+### Create a file
+POST http://localhost:8300/api/v1/files
+content-type: application/json
+
+{
+"parentPath": "/to-read/tech/articles/NPPN",
+"name": "alalal",
+"storage": {
+  "type": "link",
+  "url": "https://bikas-katwal.medium.com/zookeeper-introduction-designing-a-distributed-system-using-zookeeper-and-java-7f1b108e236e"
+  }
+}
+
+### Rename a directory 
+PATCH http://localhost:8300/api/v1/dirs/68e2693d35029744751f1dc3:rename
+content-type: application/json
+
+{
+  "name":"New test name"
+}
+
+### List directory content
+
+POST http://localhost:8300/api/v1/dirs%3Alist
+content-type: application/json
+
+{
+"parentPath": "/to-read/tech/articles/New test name"
 }

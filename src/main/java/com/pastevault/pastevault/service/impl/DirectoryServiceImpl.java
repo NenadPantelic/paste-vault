@@ -18,12 +18,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Service
 public class DirectoryServiceImpl extends CommonFileSystemService implements DirectoryService {
+
+    // almost identical to timestamp sort
+    private static final Sort DEFAULT_DIR_SORT = Sort.by(Sort.Order.asc("id"));
 
     public DirectoryServiceImpl(VaultNodeRepository vaultNodeRepository) {
         super(vaultNodeRepository);
@@ -55,21 +57,16 @@ public class DirectoryServiceImpl extends CommonFileSystemService implements Dir
     public List<VaultNodeDTO> listDirectoryContent(ListDirectoryContentRequest listDirectoryContentRequest) {
         int page = listDirectoryContentRequest.page();
         int size = listDirectoryContentRequest.size();
-        String parentPath = listDirectoryContentRequest.parentPath();
+        String parentPath = denormalizePath(listDirectoryContentRequest.parentPath());
         log.info("List directory content: parentPath = {}, page = {}, size = {}", parentPath, page, size);
 
-        PageRequest pageRequest = PageRequest.of(
-                page, size, Sort.by(Sort.Order.asc("id")));
-        String normalizedParentPath = parentPath.endsWith(CommonFileSystemService.FS_SEPARATOR) ?
-                parentPath :
-                parentPath + CommonFileSystemService.FS_SEPARATOR;
-        List<VaultNode> nodes = vaultNodeRepository.findByParentPath(normalizedParentPath, pageRequest);
+        PageRequest pageRequest = PageRequest.of(page, size, DEFAULT_DIR_SORT);
+        List<VaultNode> nodes = vaultNodeRepository.findByParentPath(parentPath, pageRequest);
         return VaultNodeMapper.mapToDTOList(nodes);
     }
 
-    // TODO: not used at the moment
     @Override
-    public VaultNodeDTO updateDirectory(String nodeId, UpdateVaultDirNode updateVaultDirNode) {
+    public VaultNodeDTO renameDirectory(String nodeId, UpdateVaultDirNode updateVaultDirNode) {
         log.info("Updating the directory node with id {}", nodeId);
         VaultNode dirNode = getNodeWithTypeCheck(nodeId, NodeType.DIR);
 
@@ -77,10 +74,11 @@ public class DirectoryServiceImpl extends CommonFileSystemService implements Dir
         String newName = updateVaultDirNode.name();
 
         if (!currentName.equals(newName)) {
-            // update node and offspring - set to unavailable because the renaming has to be propagated across the dir
-            // node and its descendants
-            dirNode.setNodeStatus(NodeStatus.UNAVAILABLE);
+            // update node and offspring - set to unavailable because the renaming has to be propagated across dir
+            // node and its descendants; to prevent new nodes, deletes and invalid lookups
+            updateNodesStatusInSubtree(dirNode, NodeStatus.UNAVAILABLE);
             renameDirWithDescendants(dirNode, newName);
+            updateNodesStatusInSubtree(dirNode, NodeStatus.READY);
         }
 
         return VaultNodeMapper.mapToDTO(dirNode);
@@ -106,16 +104,28 @@ public class DirectoryServiceImpl extends CommonFileSystemService implements Dir
         }
     }
 
-    private void renameDirWithDescendants(VaultNode dirNode, String newName) {
-        // rename the node
-        dirNode.setName(newName);
-        List<VaultNode> updatedNodes = setOffspringNodesStatus(dirNode.getFullPath(), NodeStatus.UNAVAILABLE);
-        updatedNodes.add(dirNode);
-        vaultNodeRepository.saveAll(updatedNodes);
+    private void updateNodesStatusInSubtree(VaultNode rootNode, NodeStatus status) {
+        rootNode.setNodeStatus(status);
+        String fullPath = denormalizePath(rootNode.getFullPath());
+        long updatedNodesCount = vaultNodeRepository.setOffspringNodeStatus(fullPath, status);
+        log.info("{} offspring nodes of a node[id = {}, parent path = {}] updated. New status: {}",
+                updatedNodesCount, rootNode.getId(), fullPath, status
+        );
+        // TODO: 2 update commands - switch to MongoTemplate
+        vaultNodeRepository.save(rootNode);
     }
 
-    private List<VaultNode> setOffspringNodesStatus(String path, NodeStatus status) {
-        // set all nodes which parent path starts with `path` to `status`
-        return new ArrayList<>();
+    private void renameDirWithDescendants(VaultNode rootNode, String newName) {
+        // rename the node
+        String oldParentPath = denormalizePath(rootNode.getFullPath());
+        rootNode.setName(newName);
+        String newParentPath = denormalizePath(rootNode.getFullPath());
+
+        long updatedNodesCount = vaultNodeRepository.renameParentPath(oldParentPath, newParentPath);
+        log.info("{} offspring nodes of a node[id = {}, old parent path = {}] updated. New parent path: {}",
+                updatedNodesCount, rootNode.getId(), oldParentPath, newParentPath
+        );
+        // TODO: 2 update commands - switch to MongoTemplate
+        vaultNodeRepository.save(rootNode);
     }
 }

@@ -44,6 +44,6 @@ public class VaultNode {
     }
 
     public String getFullPath() {
-        return String.format("%s/%s", parentPath, name);
+        return String.format("%s%s", parentPath, name);
     }
 }

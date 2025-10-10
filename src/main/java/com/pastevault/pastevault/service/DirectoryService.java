@@ -4,7 +4,6 @@ import com.pastevault.pastevault.dto.request.fs.ListDirectoryContentRequest;
 import com.pastevault.pastevault.dto.request.fs.NewVaultDirNode;
 import com.pastevault.pastevault.dto.request.fs.UpdateVaultDirNode;
 import com.pastevault.pastevault.dto.response.VaultNodeDTO;
-import com.pastevault.pastevault.model.VaultNode;
 
 import java.util.List;
 
@@ -32,7 +31,7 @@ public interface DirectoryService {
      * @param nodeId directory node id
      * @param updateVaultDirNode node data for update
      */
-    VaultNodeDTO updateDirectory(String nodeId, UpdateVaultDirNode updateVaultDirNode);
+    VaultNodeDTO renameDirectory(String nodeId, UpdateVaultDirNode updateVaultDirNode);
 
     /**
      * Deletes a directory node (if exists).
