@@ -21,6 +21,10 @@ public interface VaultNodeRepository extends MongoRepository<VaultNode, String> 
     @Query(value = "{ '_id' : ?0}", delete = true)
     long deleteNodeById(String nodeId);
 
+    @Query(value = "{ '_id' : ?0, creatorId: ?1}", delete = true)
+    long deleteNodeByIdAndCreatorId(String nodeId, String creatorId);
+
+
     Optional<VaultNode> findByParentPathAndName(String parentPath, String name);
 
     List<VaultNode> findByParentPath(String parentPath, Pageable pageable);

@@ -2,6 +2,9 @@ package com.pastevault.pastevault.service.impl;
 
 import com.pastevault.apicommon.exception.ApiException;
 import com.pastevault.apicommon.exception.ErrorReport;
+import com.pastevault.pastevault.context.UserContextHolder;
+import com.pastevault.pastevault.context.Role;
+import com.pastevault.pastevault.context.UserContext;
 import com.pastevault.pastevault.model.NodeStatus;
 import com.pastevault.pastevault.model.NodeType;
 import com.pastevault.pastevault.model.VaultNode;
@@ -29,12 +32,18 @@ public class CommonFileSystemService {
      * If the node does not exist, it throws an exception.
      *
      * @param nodeId an id of the node that should be deleted
-     * @throws ApiException(ErrorReport.NOT_FOUND) if the node does not exist
+     * @throws ApiException(ErrorReport.UNAUTHORIZED) if the user is not authenticated or
+     *                                                ApiException(ErrorReport.NOT_FOUND) if the node does not exist
      */
     public void deleteNode(String nodeId) {
+        UserContext userContext = UserContextHolder.get().orElseThrow(() -> new ApiException(ErrorReport.UNAUTHORIZED));
+        long numOfDeletedNodes = userContext.role() == Role.ADMIN ?
+                vaultNodeRepository.deleteNodeById(nodeId) :
+                vaultNodeRepository.deleteNodeByIdAndCreatorId(nodeId, userContext.userId());
+
         // deleteById from Spring Boot 3.x does not throw an EmptyResultDataAccessException
         // exception
-        if (vaultNodeRepository.deleteNodeById(nodeId) == 0) {
+        if (numOfDeletedNodes == 0) {
             throw new ApiException(ErrorReport.NOT_FOUND);
         }
     }
@@ -49,6 +58,8 @@ public class CommonFileSystemService {
     public VaultNode getParentDirNode(String path) {
         log.info("Retrieving a parent dir node by its full path: {}", path);
         VaultNode dirNode = getNodeByFullPath(path).orElseThrow(() -> new ApiException(ErrorReport.NOT_FOUND));
+        authorizeIfCreatorOrAdmin(dirNode.getCreatorId());
+
         if (dirNode.getType() != NodeType.DIR) {
             throw new ApiException(ErrorReport.BAD_REQUEST.withErrors("Expected a dir node, got file node"));
         }
@@ -72,7 +83,6 @@ public class CommonFileSystemService {
         log.info("Retrieving a node by full path: {}", path);
         String parentPath, name;
 
-        // TODO: add authz check
         if (path.length() == 1) {
             if (!FS_SEPARATOR.equals(path)) {
                 throw new ApiException(ErrorReport.BAD_REQUEST);
@@ -85,13 +95,15 @@ public class CommonFileSystemService {
             name = path.substring(parentPathNameSeparationIdx + 1);
         }
 
-        return vaultNodeRepository.findByParentPathAndName(parentPath, name);
+        Optional<VaultNode> nodeOptional = vaultNodeRepository.findByParentPathAndName(parentPath, name);
+        nodeOptional.ifPresent(node -> authorizeIfCreatorOrAdmin(node.getCreatorId()));
+        return nodeOptional;
     }
 
 
     public VaultNode getNodeWithTypeCheck(String nodeId, NodeType nodeType) {
-        // TODO: add authz check
         VaultNode vaultNode = vaultNodeRepository.findOrNotFound(nodeId);
+        authorizeIfCreatorOrAdmin(vaultNode.getCreatorId());
 
         if (vaultNode.getType() != nodeType) {
             log.warn("Invalid node type for id {}. Expected a {} node, got {} node.", nodeId, nodeType, vaultNode.getType());
@@ -99,6 +111,16 @@ public class CommonFileSystemService {
         }
 
         return vaultNode;
+    }
+
+    private void authorizeIfCreatorOrAdmin(String creatorId) {
+        UserContext userContext = UserContextHolder.get().orElseThrow(() -> new ApiException(ErrorReport.UNAUTHORIZED));
+        String userId = userContext.userId();
+        Role role = userContext.role();
+
+        if (!creatorId.equals(userId) && role != Role.ADMIN) {
+            throw new ApiException(ErrorReport.FORBIDDEN);
+        }
     }
 
     // name must not contain `/`
