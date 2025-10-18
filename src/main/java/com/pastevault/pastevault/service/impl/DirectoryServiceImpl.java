@@ -3,19 +3,19 @@ package com.pastevault.pastevault.service.impl;
 import com.mongodb.DuplicateKeyException;
 import com.pastevault.apicommon.exception.ApiException;
 import com.pastevault.apicommon.exception.ErrorReport;
+import com.pastevault.pastevault.constants.SearchConstants;
 import com.pastevault.pastevault.dto.request.fs.ListDirectoryContentRequest;
 import com.pastevault.pastevault.dto.request.fs.NewVaultDirNode;
 import com.pastevault.pastevault.dto.request.fs.UpdateVaultDirNode;
 import com.pastevault.pastevault.dto.response.VaultNodeDTO;
 import com.pastevault.pastevault.mapper.VaultNodeMapper;
 import com.pastevault.pastevault.model.NodeStatus;
-import com.pastevault.pastevault.model.NodeType;
 import com.pastevault.pastevault.model.VaultNode;
+import com.pastevault.pastevault.model.VaultNodeType;
 import com.pastevault.pastevault.repository.VaultNodeRepository;
 import com.pastevault.pastevault.service.DirectoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,9 +23,6 @@ import java.util.List;
 @Slf4j
 @Service
 public class DirectoryServiceImpl extends CommonFileSystemService implements DirectoryService {
-
-    // almost identical to timestamp sort
-    private static final Sort DEFAULT_DIR_SORT = Sort.by(Sort.Order.asc("id"));
 
     public DirectoryServiceImpl(VaultNodeRepository vaultNodeRepository) {
         super(vaultNodeRepository);
@@ -60,7 +57,7 @@ public class DirectoryServiceImpl extends CommonFileSystemService implements Dir
         String parentPath = denormalizePath(listDirectoryContentRequest.parentPath());
         log.info("List directory content: parentPath = {}, page = {}, size = {}", parentPath, page, size);
 
-        PageRequest pageRequest = PageRequest.of(page, size, DEFAULT_DIR_SORT);
+        PageRequest pageRequest = PageRequest.of(page, size, SearchConstants.DEFAULT_DIR_SORT);
         List<VaultNode> nodes = vaultNodeRepository.findByParentPath(parentPath, pageRequest);
         return VaultNodeMapper.mapToDTOList(nodes);
     }
@@ -68,7 +65,7 @@ public class DirectoryServiceImpl extends CommonFileSystemService implements Dir
     @Override
     public VaultNodeDTO renameDirectory(String nodeId, UpdateVaultDirNode updateVaultDirNode) {
         log.info("Updating the directory node with id {}", nodeId);
-        VaultNode dirNode = getNodeWithTypeCheck(nodeId, NodeType.DIR);
+        VaultNode dirNode = getNodeWithTypeCheck(nodeId, VaultNodeType.DIR);
 
         String currentName = dirNode.getName();
         String newName = updateVaultDirNode.name();

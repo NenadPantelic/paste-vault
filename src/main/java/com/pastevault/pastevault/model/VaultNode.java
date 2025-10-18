@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.Instant;
 
@@ -30,7 +30,7 @@ public class VaultNode {
     private String parentPath;
     private String name;
     private String creatorId;
-    private StorageNode storageNode;
+    private StorageNode storage;
     @Builder.Default
     private NodeStatus nodeStatus = NodeStatus.READY;
     @CreatedDate
@@ -39,8 +39,8 @@ public class VaultNode {
     private Instant updatedAt;
 
 
-    public NodeType getType() {
-        return storageNode != null ? NodeType.FILE : NodeType.DIR;
+    public VaultNodeType getType() {
+        return storage != null ? VaultNodeType.FILE : VaultNodeType.DIR;
     }
 
     public String getFullPath() {

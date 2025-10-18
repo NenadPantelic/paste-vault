@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @JsonTypeName("text")
-public record TextNode(@NotNull @Size(min = 1, max = 16384) String text) implements PasteableItem {
+public record NewTextNode(@NotNull @Size(min = 1, max = 16384) String text) implements PasteableItem {
 
     @Override
     public StorageType getType() {

@@ -3,7 +3,7 @@ package com.pastevault.pastevault.mapper;
 import com.pastevault.pastevault.dto.response.VaultFileNodeDTO;
 import com.pastevault.pastevault.dto.response.VaultNodeDTO;
 import com.pastevault.pastevault.dto.response.VaultStorageNodeDTO;
-import com.pastevault.pastevault.model.NodeType;
+import com.pastevault.pastevault.model.VaultNodeType;
 import com.pastevault.pastevault.model.StorageNode;
 import com.pastevault.pastevault.model.VaultNode;
 
@@ -40,7 +40,7 @@ public class VaultNodeMapper {
             return null;
         }
 
-        if (vaultNode.getType() == NodeType.DIR) {
+        if (vaultNode.getType() == VaultNodeType.DIR) {
             throw new IllegalArgumentException("Invalid node type provided. Expected a file node, got dir node.");
         }
 
@@ -48,7 +48,7 @@ public class VaultNodeMapper {
                 .id(vaultNode.getId())
                 .parentPath(vaultNode.getParentPath())
                 .name(vaultNode.getName())
-                .storage(mapToStorageNodeDTO(vaultNode.getStorageNode()))
+                .storage(mapToStorageNodeDTO(vaultNode.getStorage()))
                 .build();
     }
 

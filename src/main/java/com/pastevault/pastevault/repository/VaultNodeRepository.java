@@ -24,11 +24,18 @@ public interface VaultNodeRepository extends MongoRepository<VaultNode, String> 
     @Query(value = "{ '_id' : ?0, creatorId: ?1}", delete = true)
     long deleteNodeByIdAndCreatorId(String nodeId, String creatorId);
 
-
     Optional<VaultNode> findByParentPathAndName(String parentPath, String name);
 
     List<VaultNode> findByParentPath(String parentPath, Pageable pageable);
 
+    @Query("{'parentPath': {$regex: '^?0.*'}, '$text': { '$search': ?1 }}")
+    List<VaultNode> searchNodes(String parentPath, String text, Pageable pageable);
+
+    @Query("{'parentPath': {$regex: '^?0.*'}, '$text': { '$search': ?0 }, 'storage.text': {$exists: true}}")
+    List<VaultNode> searchFiles(String parentPath, String text, Pageable pageable);
+
+    @Query("{'parentPath': {$regex: '^?0.*'}, '$text': { '$search': ?0 }, 'storage.text': {$exists: false}}")
+    List<VaultNode> searchFolders(String parentPath, String text, Pageable pageable);
 
     @Query("{'parentPath': {$regex: '^?0.*'}}")
     @Update(pipeline = "{$set: {status: ?1}}")
@@ -37,4 +44,6 @@ public interface VaultNodeRepository extends MongoRepository<VaultNode, String> 
     @Query("{'parentPath': {$regex: '^?0.*'}}")
     @Update(pipeline = "{$set: {parentPath: ?1}}")
     long renameParentPath(String oldParentPath, String newParentPath);
+
+
 }

@@ -2,12 +2,12 @@ package com.pastevault.pastevault.service.impl;
 
 import com.pastevault.apicommon.exception.ApiException;
 import com.pastevault.apicommon.exception.ErrorReport;
-import com.pastevault.pastevault.context.UserContextHolder;
 import com.pastevault.pastevault.context.Role;
 import com.pastevault.pastevault.context.UserContext;
+import com.pastevault.pastevault.context.UserContextHolder;
 import com.pastevault.pastevault.model.NodeStatus;
-import com.pastevault.pastevault.model.NodeType;
 import com.pastevault.pastevault.model.VaultNode;
+import com.pastevault.pastevault.model.VaultNodeType;
 import com.pastevault.pastevault.repository.VaultNodeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -60,7 +60,7 @@ public class CommonFileSystemService {
         VaultNode dirNode = getNodeByFullPath(path).orElseThrow(() -> new ApiException(ErrorReport.NOT_FOUND));
         authorizeIfCreatorOrAdmin(dirNode.getCreatorId());
 
-        if (dirNode.getType() != NodeType.DIR) {
+        if (dirNode.getType() != VaultNodeType.DIR) {
             throw new ApiException(ErrorReport.BAD_REQUEST.withErrors("Expected a dir node, got file node"));
         }
 
@@ -71,7 +71,6 @@ public class CommonFileSystemService {
 
         return dirNode;
     }
-
 
     /**
      * Retrieves a node (if exists) by its full path (parentPath/name).
@@ -100,13 +99,12 @@ public class CommonFileSystemService {
         return nodeOptional;
     }
 
-
-    public VaultNode getNodeWithTypeCheck(String nodeId, NodeType nodeType) {
+    public VaultNode getNodeWithTypeCheck(String nodeId, VaultNodeType vaultNodeType) {
         VaultNode vaultNode = vaultNodeRepository.findOrNotFound(nodeId);
         authorizeIfCreatorOrAdmin(vaultNode.getCreatorId());
 
-        if (vaultNode.getType() != nodeType) {
-            log.warn("Invalid node type for id {}. Expected a {} node, got {} node.", nodeId, nodeType, vaultNode.getType());
+        if (vaultNode.getType() != vaultNodeType) {
+            log.warn("Invalid node type for id {}. Expected a {} node, got {} node.", nodeId, vaultNodeType, vaultNode.getType());
             throw new ApiException(ErrorReport.NOT_FOUND);
         }
 

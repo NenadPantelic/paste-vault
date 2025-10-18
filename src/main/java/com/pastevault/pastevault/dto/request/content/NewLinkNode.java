@@ -8,8 +8,8 @@ import org.hibernate.validator.constraints.URL;
 
 
 @JsonTypeName("link")
-public record LinkNode(@JsonProperty("url") @NotBlank @URL String url,
-                       @JsonProperty("download") boolean download) implements PasteableItem {
+public record NewLinkNode(@JsonProperty("url") @NotBlank @URL String url,
+                          @JsonProperty("download") boolean download) implements PasteableItem {
 
     @Override
     public StorageType getType() {
