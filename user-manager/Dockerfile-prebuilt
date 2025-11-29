@@ -1,0 +1,13 @@
+FROM openjdk:17-slim
+LABEL maintainer="Nenad Pantelic<nenadpantelickg@gmail.com>"
+LABEL version="0.0.1"
+LABEL description="PasteVault user-manager service"
+COPY ./target/user-manager-0.0.1-SNAPSHOT.jar user-manager.jar
+EXPOSE 9801
+HEALTHCHECK --interval=5s \
+            --timeout=3s \
+            CMD curl -f http://localhost:9801/internal/status || exit 1
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=production", "/user-manager.jar"]
+
+
+#  docker run -dit --name user-manager-app Dockerfile-prebuilt 9801:9801 user-manager:0.0.1

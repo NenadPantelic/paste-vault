@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: user-manager
+
+  datasource:
+    url: jdbc:postgresql://user-manager-db:5432/user-manager
+    # override through environment variables
+    username: user-manager
+    password: v63R_M4na9eR
+    platform: postgres
+
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 9801

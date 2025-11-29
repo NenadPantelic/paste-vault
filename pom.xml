@@ -11,6 +11,7 @@
     <groupId>com.pastevault</groupId>
     <artifactId>paste-vault</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <name>paste-vault</name>
     <description>Vault file system that handles pasted content</description>
     <url/>
@@ -20,6 +21,11 @@
     <developers>
         <developer/>
     </developers>
+    <modules>
+        <module>paste-vault-api</module>
+        <module>user-manager</module>
+        <module>common</module>
+    </modules>
     <scm>
         <connection/>
         <developerConnection/>
@@ -31,8 +37,7 @@
         <!-- Dependency versions -->
         <dep.jakarta-validation.version>3.1.0</dep.jakarta-validation.version>
         <dep.hibernate-validator.version>8.0.1.Final</dep.hibernate-validator.version>
-<!--        <dep.kafka-avro-serializer.version>7.7.2</dep.kafka-avro-serializer.version>-->
-<!--        <dep.avro.version>1.10.0</dep.avro.version>-->
+        <dep.spring-security-crypto.version>6.2.1</dep.spring-security-crypto.version>
     </properties>
 
     <repositories>
@@ -46,21 +51,40 @@
         <!--  Internal dependencies -->
         <dependency>
             <groupId>com.pastevault</groupId>
-            <artifactId>api-common</artifactId>
+            <artifactId>common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- Spring dependencies -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>${dep.spring-security-crypto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
         </dependency>
 
         <!-- Misc dependencies -->
@@ -78,12 +102,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

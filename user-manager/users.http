@@ -1,0 +1,106 @@
+@base-url=http://localhost:9801
+@user-api-path=/api/v1/users
+
+### Status
+GET {{base-url}}/internal/status
+
+#####
+
+### Create a user - admin
+POST {{base-url}}{{user-api-path}}
+Content-Type: application/json
+
+{
+  "firstName": "Nenad",
+  "lastName": "Pantelic",
+  "username": "npantelija",
+  "email": "npant@elic.com",
+  "password": "pass123456",
+  "role": "ADMIN"
+}
+
+### Create a user - user
+POST {{base-url}}{{user-api-path}}
+Content-Type: application/json
+
+{
+  "firstName": "Petar",
+  "lastName": "Petrovic",
+  "username": "pera_detlich",
+  "email": "pera@detlic.com",
+  "password": "pass123456",
+  "role": "USER"
+}
+
+
+### Create a user with duplicate username
+POST {{base-url}}{{user-api-path}}
+Content-Type: application/json
+
+{
+  "firstName": "Nenad",
+  "lastName": "Pantelic",
+  "username": "npantelija",
+  "email": "npant@el.ic",
+  "password": "pass123456",
+  "role": "ADMIN"
+}
+
+
+### Create a user with invalid parameters
+POST {{base-url}}{{user-api-path}}
+Content-Type: application/json
+
+{
+  "firstName": "",
+  "lastName": "Pantelic",
+  "username": "nenad",
+  "email": "npant",
+  "password": "pass123456",
+  "role": "ADMIN"
+}
+
+#####
+### List users
+GET {{base-url}}{{user-api-path}}
+
+### List users - page 1 and size 25
+GET {{base-url}}{{user-api-path}}?page=1&size=25
+
+#####
+### Get user
+GET {{base-url}}{{user-api-path}}/1
+
+### Get nonexistent user
+GET {{base-url}}{{user-api-path}}/1111
+
+
+#####
+### Update user
+PUT {{base-url}}{{user-api-path}}/1
+Content-Type: application/json
+
+{
+  "firstName": "Miloš",
+  "lastName": "Teodosić"
+}
+
+
+### Update user - invalid JSON
+PUT {{base-url}}{{user-api-path}}/1
+Content-Type: application/json
+
+{
+  "firstName": "Miloš",
+  "lastName": "Teodosić",
+}
+
+#####
+### Delete user - admin
+DELETE {{base-url}}{{user-api-path}}/1
+Content-Type: application/json
+
+
+### Delete user - user
+DELETE {{base-url}}{{user-api-path}}/3
+Content-Type: application/json

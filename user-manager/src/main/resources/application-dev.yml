@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: user-manager
+
+  datasource:
+    url: jdbc:postgresql://localhost:5460/user-manager
+    username: user-manager
+    password: v63R_M4na9eR
+    platform: postgres
+
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 9801
+
