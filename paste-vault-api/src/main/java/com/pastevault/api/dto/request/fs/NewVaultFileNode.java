@@ -8,6 +8,8 @@ import com.pastevault.api.dto.request.content.PasteableItem;
 import com.pastevault.api.dto.request.content.NewTextNode;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public record NewVaultFileNode(@NotBlank String parentPath,
                                String name,
                                @JsonTypeInfo(
@@ -18,5 +20,6 @@ public record NewVaultFileNode(@NotBlank String parentPath,
                                        @JsonSubTypes.Type(value = NewLinkNode.class, name = "link"),
                                        @JsonSubTypes.Type(value = NewTextNode.class, name = "text")
                                })
-                               @JsonProperty("storage") PasteableItem storageNode) {
+                               @JsonProperty("storage") PasteableItem storageNode,
+                               @JsonProperty("tags") List<String> tags) {
 }

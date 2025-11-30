@@ -84,6 +84,7 @@ public class DirectoryServiceImpl extends CommonFileSystemService implements Dir
     @Override
     public void deleteDirectory(String nodeId) {
         log.info("Deleting a directory node with id {}", nodeId);
+        // TODO: delete all offspring nodes
         deleteNode(nodeId);
     }
 

@@ -13,6 +13,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -33,11 +35,12 @@ public class VaultNode {
     private StorageNode storage;
     @Builder.Default
     private NodeStatus nodeStatus = NodeStatus.READY;
+    @Builder.Default
+    private List<String> tags = new ArrayList<>();
     @CreatedDate
     private Instant createdAt;
     @LastModifiedDate
     private Instant updatedAt;
-
 
     public VaultNodeType getType() {
         return storage != null ? VaultNodeType.FILE : VaultNodeType.DIR;

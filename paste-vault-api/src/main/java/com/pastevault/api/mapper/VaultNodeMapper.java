@@ -20,6 +20,7 @@ public class VaultNodeMapper {
                 .parentPath(vaultNode.getParentPath())
                 .name(vaultNode.getName())
                 .type(vaultNode.getType().name())
+                .tags(vaultNode.getTags())
                 .build();
     }
 
@@ -46,6 +47,7 @@ public class VaultNodeMapper {
                 .id(vaultNode.getId())
                 .parentPath(vaultNode.getParentPath())
                 .name(vaultNode.getName())
+                .tags(vaultNode.getTags())
                 .storage(mapToStorageNodeDTO(vaultNode.getStorage()))
                 .build();
     }
