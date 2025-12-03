@@ -20,7 +20,6 @@ public class VaultNodeMapper {
                 .parentPath(vaultNode.getParentPath())
                 .name(vaultNode.getName())
                 .type(vaultNode.getType().name())
-                .tags(vaultNode.getTags())
                 .build();
     }
 

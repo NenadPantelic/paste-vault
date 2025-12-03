@@ -2,6 +2,8 @@ server:
   port: 8300
 
 spring:
+  application:
+    name: paste-vault-api
   data:
     mongodb:
       authentication-database: admin
@@ -11,3 +13,23 @@ spring:
       port: 27017
       host: localhost
       auto-index-creation: true
+
+eureka:
+  client:
+    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+      enabled: true
+    registerWithEureka: true
+    fetchRegistry: true
+  instance:
+    preferIpAddress: true # Optional: use IP address instead of hostname
+    hostname: localhost
+
+
+#  eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+#  eureka.instance.preferIpAddress=true
+#  eureka.client.registerWithEureka=true
+#  eureka.client.fetchRegistry=true #eureka.instance.instanceId=${spring.application.name}:${random.value}
+#  logging.level.org.springframework.cloud.netflix.eureka=DEBUG
+#  logging.level.com.netflix.discovery=DEBUG
