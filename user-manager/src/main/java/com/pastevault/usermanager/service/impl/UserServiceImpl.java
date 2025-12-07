@@ -1,10 +1,11 @@
 package com.pastevault.usermanager.service.impl;
 
+import com.pastevault.common.dto.request.UserByCredentialsQuery;
 import com.pastevault.common.exception.ApiException;
 import com.pastevault.common.exception.ErrorReport;
 import com.pastevault.usermanager.dto.request.EditUser;
 import com.pastevault.usermanager.dto.request.NewUser;
-import com.pastevault.usermanager.dto.response.UserRepresentation;
+import com.pastevault.usermanager.dto.response.UserDTO;
 import com.pastevault.usermanager.mapper.UserMapper;
 import com.pastevault.usermanager.model.Role;
 import com.pastevault.usermanager.model.User;
@@ -32,7 +33,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserRepresentation createUser(NewUser newUser) {
+    public UserDTO createUser(NewUser newUser) {
         log.info("Create a new user: {}", newUser);
 
         User user = User.builder()
@@ -49,14 +50,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserRepresentation getUser(int userId) {
+    public UserDTO getUser(int userId) {
         log.info("Get user with id {}", userId);
         User user = userRepository.findOrNotFound(userId);
         return UserMapper.mapToDTO(user);
     }
 
     @Override
-    public List<UserRepresentation> listUsers(int page, int size) {
+    public UserDTO getUserByCredentials(UserByCredentialsQuery userByCredentialsQuery) {
+        log.info("Get user by credentials: username = {}", userByCredentialsQuery.username());
+        User user = userRepository.findByUsernameAndPassword(
+                userByCredentialsQuery.username(),
+                userByCredentialsQuery.password()
+        ).orElseThrow(() -> new ApiException(ErrorReport.NOT_FOUND));
+
+        return UserMapper.mapToDTO(user);
+    }
+
+    @Override
+    public List<UserDTO> listUsers(int page, int size) {
         log.info("Listing users: page = {}, size = {}", page, size);
         PageRequest pageRequest = PageRequest.of(
                 page,
@@ -68,7 +80,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserRepresentation updateUser(int userId, EditUser editUser) {
+    public UserDTO updateUser(int userId, EditUser editUser) {
         log.info("Updating a user with id {}", userId);
         User user = userRepository.findOrNotFound(userId);
         user.setFirstName(editUser.firstName());
@@ -82,7 +94,7 @@ public class UserServiceImpl implements UserService {
         log.info("Deleting a user with id {}", userId);
 
         User user = userRepository.findOrNotFound(userId);
-        // TODO: prohibit the self-deletion
+        // TODO: prohibit self-deletion
         if (user.isAdmin()) {
             String errMessage = String.format("Unable to delete the admin user with id %d", userId);
             log.warn(errMessage);

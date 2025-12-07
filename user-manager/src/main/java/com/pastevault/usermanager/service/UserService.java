@@ -1,8 +1,9 @@
 package com.pastevault.usermanager.service;
 
+import com.pastevault.common.dto.request.UserByCredentialsQuery;
 import com.pastevault.usermanager.dto.request.EditUser;
 import com.pastevault.usermanager.dto.request.NewUser;
-import com.pastevault.usermanager.dto.response.UserRepresentation;
+import com.pastevault.usermanager.dto.response.UserDTO;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface UserService {
      *
      * @param newUser a new user's details
      */
-    UserRepresentation createUser(NewUser newUser);
+    UserDTO createUser(NewUser newUser);
 
     /**
      * Gets the user by the given id.
@@ -21,7 +22,15 @@ public interface UserService {
      *
      * @param userId an identifier of the user
      */
-    UserRepresentation getUser(int userId);
+    UserDTO getUser(int userId);
+
+    /**
+     * Gets the user by its credentials.
+     * If the user does not exist, returns an appropriate error.
+     *
+     * @param userByCredentialsQuery an object holding user credentials
+     */
+    UserDTO getUserByCredentials(UserByCredentialsQuery userByCredentialsQuery);
 
     /**
      * Lists users with respect to the given paging parameters.
@@ -29,15 +38,15 @@ public interface UserService {
      * @param page page number
      * @param size page size
      */
-    List<UserRepresentation> listUsers(int page, int size);
+    List<UserDTO> listUsers(int page, int size);
 
     /**
      * Updates a user with the given id.
      *
-     * @param userId  an identifier of the user
+     * @param userId   an identifier of the user
      * @param editUser property values to update the user
      */
-    UserRepresentation updateUser(int userId, EditUser editUser);
+    UserDTO updateUser(int userId, EditUser editUser);
 
     /**
      * Deletes a user with the given id.

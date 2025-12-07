@@ -1,4 +1,4 @@
-package com.pastevault.usermanager.controller;
+package com.pastevault.api.controller;
 
 import com.pastevault.common.dto.response.StatusReport;
 import lombok.extern.slf4j.Slf4j;
@@ -18,3 +18,4 @@ public class StatusController {
         return new StatusReport(System.currentTimeMillis() - START_TIME);
     }
 }
+

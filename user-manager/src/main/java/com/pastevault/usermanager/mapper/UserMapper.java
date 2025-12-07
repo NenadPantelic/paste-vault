@@ -1,6 +1,6 @@
 package com.pastevault.usermanager.mapper;
 
-import com.pastevault.usermanager.dto.response.UserRepresentation;
+import com.pastevault.usermanager.dto.response.UserDTO;
 import com.pastevault.usermanager.model.User;
 
 import java.util.List;
@@ -8,12 +8,12 @@ import java.util.stream.Collectors;
 
 public class UserMapper {
 
-    public static UserRepresentation mapToDTO(User user) {
+    public static UserDTO mapToDTO(User user) {
         if (user == null) {
             return null;
         }
 
-        return UserRepresentation.builder()
+        return UserDTO.builder()
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -23,7 +23,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static List<UserRepresentation> mapToDTOList(List<User> users) {
+    public static List<UserDTO> mapToDTOList(List<User> users) {
         if (users == null) {
             return null;
         }

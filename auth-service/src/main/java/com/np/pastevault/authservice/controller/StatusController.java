@@ -1,4 +1,4 @@
-package com.pastevault.usermanager.controller;
+package com.np.pastevault.authservice.controller;
 
 import com.pastevault.common.dto.response.StatusReport;
 import lombok.extern.slf4j.Slf4j;

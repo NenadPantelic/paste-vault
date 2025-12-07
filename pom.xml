@@ -26,6 +26,7 @@
         <module>user-manager</module>
         <module>common</module>
         <module>service-registry</module>
+        <module>auth-service</module>
     </modules>
     <scm>
         <connection/>
